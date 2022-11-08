@@ -957,6 +957,47 @@ func (pgConn *PgConn) Exec(ctx context.Context, sql string) *MultiResultReader {
 	return multiResult
 }
 
+// ExecParams executes a MPP command via the PostgreSQL extended query protocol.
+func (pgConn *PgConn) ExecMPPQuery(ctx context.Context, sql string) *MultiResultReader {
+	if err := pgConn.lock(); err != nil {
+		return &MultiResultReader{
+			closed: true,
+			err:    err,
+		}
+	}
+
+	pgConn.multiResultReader = MultiResultReader{
+		pgConn: pgConn,
+		ctx:    ctx,
+	}
+	multiResult := &pgConn.multiResultReader
+	if ctx != context.Background() {
+		select {
+		case <-ctx.Done():
+			multiResult.closed = true
+			multiResult.err = newContextAlreadyDoneError(ctx)
+			pgConn.unlock()
+			return multiResult
+		default:
+		}
+		pgConn.contextWatcher.Watch(ctx)
+	}
+
+	pgConn.frontend.SendMPPQuery(&pgproto3.Parse{Query: sql})
+
+	err := pgConn.frontend.Flush()
+	if err != nil {
+		pgConn.asyncClose()
+		pgConn.contextWatcher.Unwatch()
+		multiResult.closed = true
+		multiResult.err = err
+		pgConn.unlock()
+		return multiResult
+	}
+
+	return multiResult
+}
+
 // ExecParams executes a command via the PostgreSQL extended query protocol.
 //
 // sql is a SQL command string. It may only contain one query. Parameter substitution is positional using $1, $2, $3,

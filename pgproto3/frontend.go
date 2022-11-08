@@ -186,6 +186,14 @@ func (f *Frontend) SendQuery(msg *Query) {
 	}
 }
 
+func (f *Frontend) SendMPPQuery(msg *Query) {
+	prevLen := len(f.wbuf)
+	f.wbuf = msg.Encode(f.wbuf)
+	if f.tracer != nil {
+		f.tracer.traceQuery('M', int32(len(f.wbuf)-prevLen), msg)
+	}
+}
+
 // SendUnbufferedEncodedCopyData immediately sends an encoded CopyData message to the backend (i.e. the server). This method
 // is more efficient than sending a CopyData message with Send as the message data is not copied to the internal buffer
 // before being written out. The internal buffer is flushed before the message is sent.
