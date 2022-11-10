@@ -39,6 +39,7 @@ type Frontend struct {
 	copyOutResponse                 CopyOutResponse
 	copyDone                        CopyDone
 	dataRow                         DataRow
+	wroteXlog                       WroteXlog
 	emptyQueryResponse              EmptyQueryResponse
 	errorResponse                   ErrorResponse
 	functionCallResponse            FunctionCallResponse
@@ -47,6 +48,7 @@ type Frontend struct {
 	notificationResponse            NotificationResponse
 	parameterDescription            ParameterDescription
 	parameterStatus                 ParameterStatus
+	parameterMopHighWaterMark       ParameterMopHighWaterMark
 	parseComplete                   ParseComplete
 	readyForQuery                   ReadyForQuery
 	rowDescription                  RowDescription
@@ -300,6 +302,10 @@ func (f *Frontend) Receive() (BackendMessage, error) {
 		msg = &f.copyBothResponse
 	case 'Z':
 		msg = &f.readyForQuery
+	case 'k':
+		msg = &f.parameterMopHighWaterMark
+	case 'x':
+		msg = &f.wroteXlog
 	default:
 		return nil, fmt.Errorf("unknown message type: %c", f.msgType)
 	}

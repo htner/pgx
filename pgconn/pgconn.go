@@ -369,6 +369,10 @@ func connect(ctx context.Context, config *Config, fallbackConfig *FallbackConfig
 		case *pgproto3.ErrorResponse:
 			pgConn.conn.Close()
 			return nil, ErrorResponseToPgError(msg)
+		case *pgproto3.WroteXlog:
+			continue
+		case *pgproto3.ParameterMopHighWaterMark:
+			continue
 		default:
 			pgConn.conn.Close()
 			return nil, &connectError{config: config, msg: "received unexpected message", err: err}
