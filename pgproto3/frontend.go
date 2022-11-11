@@ -188,11 +188,11 @@ func (f *Frontend) SendQuery(msg *Query) {
 	}
 }
 
-func (f *Frontend) SendMPPQuery(msg *Query) {
+func (f *Frontend) SendMPPQuery(msg *MPPQuery) {
 	prevLen := len(f.wbuf)
 	f.wbuf = msg.Encode(f.wbuf)
 	if f.tracer != nil {
-		f.tracer.traceQuery('W', int32(len(f.wbuf)-prevLen), msg)
+		f.tracer.traceMPPQuery('W', int32(len(f.wbuf)-prevLen), msg)
 	}
 }
 

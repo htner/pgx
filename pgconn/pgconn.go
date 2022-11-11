@@ -987,7 +987,7 @@ func (pgConn *PgConn) ExecMPPQuery(ctx context.Context, sql string) *MultiResult
 		pgConn.contextWatcher.Watch(ctx)
 	}
 
-	pgConn.frontend.SendMPPQuery(&pgproto3.Query{String: sql})
+	pgConn.frontend.SendMPPQuery(&pgproto3.MPPQuery{String: sql})
 
 	err := pgConn.frontend.Flush()
 	if err != nil {

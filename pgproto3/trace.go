@@ -355,6 +355,12 @@ func (t *tracer) traceQuery(sender byte, encodedLen int32, msg *Query) {
 	t.finishTrace()
 }
 
+func (t *tracer) traceMPPQuery(sender byte, encodedLen int32, msg *MPPQuery) {
+	t.beginTrace(sender, encodedLen, "MPPQuery")
+	fmt.Fprintf(t.buf, "\t %s", traceDoubleQuotedString([]byte(msg.String)))
+	t.finishTrace()
+}
+
 func (t *tracer) traceReadyForQuery(sender byte, encodedLen int32, msg *ReadyForQuery) {
 	t.beginTrace(sender, encodedLen, "ReadyForQuery")
 	fmt.Fprintf(t.buf, "\t %c", msg.TxStatus)
